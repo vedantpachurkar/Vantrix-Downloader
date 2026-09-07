@@ -1,0 +1,3 @@
+"""
+Vantrix-Downloader Core Package
+"""

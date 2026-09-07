@@ -1,0 +1,9 @@
+yt-dlp>=2024.8.0
+customtkinter>=5.2.0
+pillow>=10.0.0
+requests>=2.31.0
+imageio-ffmpeg>=0.5.1
+darkdetect>=0.8.0
+mutagen>=1.47.0
+pywebview>=5.0.0
+bottle>=0.13.0

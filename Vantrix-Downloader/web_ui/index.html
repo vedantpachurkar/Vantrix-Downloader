@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#06080d">
+  <title>Vantrix-Downloader — Windows Dedicated Edition</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Tailwind CSS Engine -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              cinematic: {
+                950: '#06080d',
+                900: '#0b0f19',
+                850: '#111726',
+                800: '#171f33',
+                700: '#1e293b',
+              }
+            }
+          }
+        }
+      };
+    }
+  </script>
+  <style>
+    /* Liquid Glass Aesthetic */
+    .liquid-glass {
+      background: rgba(17, 23, 38, 0.78);
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: 0 12px 40px -10px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+    }
+    .liquid-glass-subtle {
+      background: rgba(15, 21, 35, 0.55);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .liquid-glass-card {
+      background: linear-gradient(135deg, rgba(22, 30, 49, 0.82) 0%, rgba(13, 18, 30, 0.88) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      transition: all 0.25s ease;
+    }
+    .liquid-glass-card:hover {
+      border-color: rgba(56, 189, 248, 0.25);
+      box-shadow: 0 14px 44px -8px rgba(0, 0, 0, 0.7), 0 0 20px -2px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+    .liquid-pill {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .liquid-pill:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .liquid-pill.active {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #38bdf8;
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.3);
+    }
+    .liquid-pill.active-audio {
+      background: rgba(192, 132, 252, 0.2);
+      border-color: rgba(192, 132, 252, 0.5);
+      color: #c084fc;
+      box-shadow: 0 0 18px rgba(192, 132, 252, 0.3);
+    }
+    @keyframes pulse-beam {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+    .animate-beam {
+      animation: pulse-beam 2.2s infinite ease-in-out;
+    }
+    .ambient-glow-1 {
+      position: fixed;
+      top: -10%;
+      left: 15%;
+      width: 650px;
+      height: 650px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, rgba(6, 182, 212, 0.04) 50%, transparent 70%);
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .ambient-glow-2 {
+      position: fixed;
+      bottom: -15%;
+      right: 5%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.09) 0%, rgba(16, 185, 129, 0.03) 50%, transparent 70%);
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body class="bg-[#06080d] text-slate-100 antialiased font-sans min-h-screen flex flex-col selection:bg-cyan-500 selection:text-black overflow-x-hidden">
+
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Toast Notification Stack -->
+  <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none max-w-sm w-full"></div>
+
+  <!-- Main App Shell -->
+  <div class="flex-1 flex flex-col md:flex-row relative z-10 w-full min-h-screen">
+
+    <!-- ======================================================== -->
+    <!-- LEFT SIDEBAR: Glass Bento Navigation                     -->
+    <!-- ======================================================== -->
+    <aside id="sidebar" class="hidden md:flex w-full md:w-64 lg:w-72 liquid-glass md:min-h-screen border-r border-white/10 flex-col justify-between shrink-0 p-4 transition-all duration-300 z-30">
+      <div class="flex flex-col gap-6">
+        
+        <!-- Logo Header -->
+        <div class="flex items-center justify-between px-2 pt-2">
+          <div class="flex items-center gap-3">
+            <img src="/logo.png" alt="Vantrix Logo" class="w-10 h-10 rounded-2xl shadow-lg shadow-cyan-500/20 border border-cyan-500/30 object-cover">
+            <div>
+              <div class="font-black tracking-tight text-lg leading-tight text-white">Vantrix-Downloader</div>
+              <div class="text-[10px] font-semibold tracking-widest text-cyan-400 uppercase">Windows 10 & 11 Dedicated</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex flex-col gap-1.5" id="navLinks">
+          <button onclick="scrollToSection('heroSection')" class="nav-item active flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 bg-gradient-to-r from-blue-600/30 to-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-inner">
+            <div class="flex items-center gap-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+              <span>Download Media</span>
+            </div>
+            <span class="text-[10px] bg-cyan-400/20 text-cyan-300 px-2 py-0.5 rounded-full font-bold">4K/Lossless</span>
+          </button>
+
+          <button onclick="scrollToSection('mediaConfigureSection')" class="nav-item flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:text-white hover:bg-white/5 border border-transparent">
+            <div class="flex items-center gap-3">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+              <span>Quality & Format</span>
+            </div>
+            <span class="text-[10px] text-slate-400">Settings</span>
+          </button>
+
+          <button onclick="scrollToSection('activeTasksSection')" class="nav-item flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:text-white hover:bg-white/5 border border-transparent">
+            <div class="flex items-center gap-3">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <span>Active Queue</span>
+            </div>
+            <span id="activeCountBadge" class="text-xs bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-full border border-emerald-500/30">0</span>
+          </button>
+
+          <button onclick="scrollToSection('librarySection')" class="nav-item flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:text-white hover:bg-white/5 border border-transparent">
+            <div class="flex items-center gap-3">
+              <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <span>Media Library</span>
+            </div>
+            <span id="libraryCountBadge" class="text-xs text-slate-400 font-medium">0</span>
+          </button>
+        </nav>
+
+        <!-- Supported Platforms Card -->
+        <div class="liquid-glass-subtle p-3.5 rounded-2xl border border-white/5 flex flex-col gap-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Direct Engine Support</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          </div>
+          <div class="grid grid-cols-1 gap-1.5 text-xs text-slate-300">
+            <div class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              <span class="font-medium">YouTube 4K/HDR & Shorts</span>
+            </div>
+            <div class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5">
+              <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+              <span class="font-medium">Instagram Reels & Posts</span>
+            </div>
+            <div class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5">
+              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+              <span class="font-medium">TikTok HD (No Watermark)</span>
+            </div>
+            <div class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5">
+              <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+              <span class="font-medium">SoundCloud Lossless FLAC</span>
+            </div>
+            <div class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5">
+              <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+              <span class="font-medium">Twitter/X, Vimeo & 1000+</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Settings & Storage Meter -->
+      <div class="pt-4 border-t border-white/10 flex flex-col gap-2">
+        <div class="liquid-glass-subtle p-3 rounded-xl border border-white/5">
+          <div class="flex justify-between items-center text-xs mb-1.5">
+            <span class="text-slate-400">Windows Storage</span>
+            <span class="font-bold text-cyan-400" id="sidebarFreeStorage">...</span>
+          </div>
+          <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div id="storageBarFill" class="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full" style="width: 55%"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ======================================================== -->
+    <!-- MAIN CONTENT AREA                                        -->
+    <!-- ======================================================== -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+
+      <!-- TOP BAR -->
+      <header class="liquid-glass sticky top-0 z-20 border-b border-white/10 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar()" class="md:hidden text-slate-300 hover:text-white p-2 rounded-xl liquid-pill">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+          </button>
+          <div>
+            <h1 id="pageTitle" class="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
+              <img src="/logo.png" alt="logo" class="w-5 h-5 rounded-md md:hidden object-cover inline-block shadow-sm">
+              <span>Vantrix-Downloader</span>
+            </h1>
+            <span class="hidden sm:inline-block text-[10px] text-cyan-400 font-mono">● Windows 10 & 11 Dedicated Edition</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Real-Time Speed Meter -->
+          <div class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl liquid-pill text-xs">
+            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></div>
+            <span class="font-mono font-bold text-cyan-300" id="topSpeedMeter">0.0 MB/s</span>
+            <span class="hidden sm:inline text-slate-400 text-[10px]">Speed</span>
+          </div>
+
+          <!-- Pure Dark Mode Badge -->
+          <div class="flex items-center px-2.5 py-1.5 rounded-xl liquid-pill border border-white/10 text-xs text-slate-400 gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+            <span class="font-mono text-[10px] text-slate-300">Dark Mode</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- VIEW CONTAINER -->
+      <div class="p-4 sm:p-6 max-w-7xl w-full mx-auto flex flex-col gap-6">
+
+        <!-- ======================================================== -->
+        <!-- 1. HERO SECTION: ADD DOWNLOAD & ANALYZER                 -->
+        <!-- ======================================================== -->
+        <section id="heroSection" class="liquid-glass rounded-3xl p-5 sm:p-8 relative overflow-hidden shadow-2xl border border-white/10">
+          <div class="relative z-10">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-widest text-cyan-400 flex items-center gap-1.5 mb-1">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                  Universal Link Downloader
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Paste any media link</h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Download up to 4K 60fps Video or Studio Lossless FLAC / Dolby Audio from Instagram, YouTube, TikTok, SoundCloud, and more.</p>
+              </div>
+            </div>
+
+            <!-- Quick Platform Preset Chips -->
+            <div class="flex items-center gap-1.5 flex-wrap mb-4">
+              <span class="text-[11px] font-semibold text-slate-400 mr-1">Quick Links:</span>
+              <button onclick="setSampleUrl('https://www.youtube.com/watch?v=aqz-KE-bpKQ', 'video')" class="px-2.5 py-1 rounded-lg text-xs font-medium liquid-pill text-red-300 hover:text-white flex items-center gap-1">
+                <span>🔴 YouTube 4K 60fps</span>
+              </button>
+              <button onclick="setSampleUrl('https://www.instagram.com/reel/', 'video')" class="px-2.5 py-1 rounded-lg text-xs font-medium liquid-pill text-pink-300 hover:text-white flex items-center gap-1">
+                <span>📸 Instagram Reel</span>
+              </button>
+              <button onclick="setSampleUrl('https://soundcloud.com/', 'audio')" class="px-2.5 py-1 rounded-lg text-xs font-medium liquid-pill text-orange-300 hover:text-white flex items-center gap-1">
+                <span>🎵 SoundCloud FLAC</span>
+              </button>
+              <button onclick="setSampleUrl('https://www.tiktok.com/', 'video')" class="px-2.5 py-1 rounded-lg text-xs font-medium liquid-pill text-cyan-300 hover:text-white flex items-center gap-1">
+                <span>⚡ TikTok HD</span>
+              </button>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="relative flex flex-col sm:flex-row items-stretch gap-3">
+              <div class="relative flex-1 group">
+                <input type="text" id="urlInput" placeholder="🔗 Paste any Video or Audio URL (YouTube, Instagram, TikTok, SoundCloud, X, Reddit, Vimeo...)" 
+                  value="https://www.youtube.com/watch?v=aqz-KE-bpKQ"
+                  class="w-full bg-[#0b0f19] border border-white/15 rounded-2xl pl-4 sm:pl-5 pr-12 py-3.5 sm:py-4 text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 transition-all">
+
+                
+                <button onclick="clearUrlInput()" class="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-white px-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                <button onclick="analyzeEnteredLink()" id="analyzeBtn" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3.5 sm:py-4 rounded-2xl font-black text-sm bg-gradient-to-r from-cyan-400 via-teal-300 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black shadow-lg shadow-cyan-500/25 active:scale-95 transition-all">
+                  <svg id="analyzeSpinner" class="w-4 h-4 hidden animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  <span id="analyzeText">Analyze Link</span>
+                </button>
+
+                <button onclick="pasteAndAnalyze()" class="px-4 py-3.5 sm:py-4 rounded-2xl font-semibold text-sm liquid-pill text-slate-200 hover:text-white flex items-center gap-1.5" title="Paste and analyze from clipboard">
+                  <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                  <span class="hidden sm:inline">Paste</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Scanning Beam Indicator -->
+            <div id="analyzingBar" class="hidden w-full h-1 bg-slate-800 rounded-full overflow-hidden mt-4 relative">
+              <div class="h-full w-1/3 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 rounded-full animate-beam"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- 2. MEDIA FORMAT & DOWNLOAD CONFIGURATION BENTO           -->
+        <!-- ======================================================== -->
+        <section id="mediaConfigureSection" class="liquid-glass rounded-3xl p-5 sm:p-7 border border-white/10 shadow-2xl flex flex-col gap-6">
+          
+          <!-- Media Summary Card: Thumbnail, Title, Channel, Duration, Stream capabilities -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-2xl liquid-glass-subtle border border-white/5">
+            <div class="flex items-center gap-4 min-w-0">
+              <div class="relative w-24 h-16 sm:w-28 sm:h-18 rounded-2xl overflow-hidden border border-white/10 shrink-0 bg-slate-900 shadow-lg">
+                <img id="mediaThumb" src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=300&auto=format&fit=crop&q=80" 
+                  alt="Media Thumbnail" class="w-full h-full object-cover">
+                <div class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-bold font-mono bg-black/80 text-cyan-300">
+                  <span id="mediaDurationBadge">10:35</span>
+                </div>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span id="mediaDomainBadge" class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20">Universal</span>
+                  <span class="text-slate-400 text-xs">•</span>
+                  <span id="mediaUploader" class="text-xs text-slate-400 truncate">Blender Foundation</span>
+                </div>
+                <h3 id="mediaTitle" class="text-base sm:text-lg font-bold text-white mt-1 leading-snug truncate">
+                  Big Buck Bunny 60fps 4K - Blender Studio
+                </h3>
+              </div>
+            </div>
+
+            <!-- Stream Capabilities Indicators -->
+            <div class="flex items-center gap-3 shrink-0 self-stretch md:self-auto">
+              <div class="flex-1 md:flex-initial liquid-glass p-2.5 px-4 rounded-xl border border-white/10 flex flex-col items-center">
+                <span class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Max Quality</span>
+                <span id="capMaxRes" class="font-bold text-cyan-300 text-xs flex items-center gap-1.5 mt-0.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                  4K (2160p)
+                </span>
+              </div>
+              <div class="flex-1 md:flex-initial liquid-glass p-2.5 px-4 rounded-xl border border-white/10 flex flex-col items-center">
+                <span class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Audio Stream</span>
+                <span id="capAudioTrack" class="font-bold text-purple-300 text-xs flex items-center gap-1.5 mt-0.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                  Dolby 5.1 / Stereo
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Format Selection & Download Options Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left 7 columns: Mode Switcher & Quality Grid -->
+            <div class="lg:col-span-7 flex flex-col gap-4">
+              <!-- Mode Switcher: Video vs Audio -->
+              <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Download Mode</label>
+                <div class="grid grid-cols-2 gap-2 p-1 bg-black/40 rounded-2xl border border-white/10">
+                  <button id="modeBtnVideo" onclick="setDownloadMode('video')" 
+                    class="py-3 px-2 sm:px-3 rounded-xl text-xs font-bold text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center gap-1.5 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    <span>🎬 Video</span>
+                  </button>
+                  <button id="modeBtnAudio" onclick="setDownloadMode('audio')" 
+                    class="py-3 px-2 sm:px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                    <span>🎵 Audio</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- VIDEO QUALITY OPTIONS -->
+              <div id="videoOptionsGroup" class="flex flex-col gap-2.5">
+                <div class="flex justify-between items-center">
+                  <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Video Quality Target</span>
+                  <span class="text-[11px] font-bold text-cyan-400 font-mono" id="selectedVideoLabel">4K Ultra HD</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="videoQualityPills">
+                  <button onclick="selectVideoQuality('4k', '4K Ultra HD (2160p)')" class="vq-pill active py-2.5 px-3 rounded-xl text-xs font-bold liquid-pill text-center">4K UHD (2160p)</button>
+                  <button onclick="selectVideoQuality('1440p', '2K Quad HD (1440p)')" class="vq-pill py-2.5 px-3 rounded-xl text-xs font-semibold liquid-pill text-center">2K QHD (1440p)</button>
+                  <button onclick="selectVideoQuality('1080p', '1080p Full HD')" class="vq-pill py-2.5 px-3 rounded-xl text-xs font-semibold liquid-pill text-center">1080p FHD (60fps)</button>
+                  <button onclick="selectVideoQuality('720p', '720p HD')" class="vq-pill py-2.5 px-3 rounded-xl text-xs font-semibold liquid-pill text-center">720p HD</button>
+                  <button onclick="selectVideoQuality('best', 'Best Native Source')" class="vq-pill sm:col-span-2 py-2.5 px-3 rounded-xl text-xs font-semibold liquid-pill text-center">Best Native (Instagram/TikTok)</button>
+                </div>
+
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                  <span class="text-xs text-slate-400 font-medium">Video Container:</span>
+                  <div class="flex gap-1.5" id="videoContainerPills">
+                    <button onclick="selectContainer('mp4', this)" class="c-pill active px-3.5 py-1 rounded-lg text-xs font-bold liquid-pill">MP4</button>
+                    <button onclick="selectContainer('mkv', this)" class="c-pill px-3.5 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white liquid-pill">MKV</button>
+                    <button onclick="selectContainer('webm', this)" class="c-pill px-3.5 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white liquid-pill">WebM</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AUDIO FORMAT OPTIONS -->
+              <div id="audioOptionsGroup" class="hidden flex flex-col gap-2.5">
+                <div class="flex justify-between items-center">
+                  <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Audio Format & Bitrate</span>
+                  <span class="text-[11px] font-bold text-purple-400 font-mono" id="selectedAudioLabel">FLAC 24-bit Lossless</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="audioQualityPills">
+                  <button onclick="selectAudioQuality('flac', 'FLAC 24-bit Lossless')" class="aq-pill active-audio py-3 px-3 rounded-xl text-xs font-bold liquid-pill flex flex-col items-center">
+                    <span>💎 FLAC Studio</span>
+                    <span class="text-[9px] text-purple-300 font-normal mt-0.5">24-bit Lossless</span>
+                  </button>
+                  <button onclick="selectAudioQuality('wav', 'WAV Uncompressed PCM')" class="aq-pill py-3 px-3 rounded-xl text-xs font-semibold liquid-pill flex flex-col items-center text-slate-300">
+                    <span>🎼 WAV PCM</span>
+                    <span class="text-[9px] text-slate-400 font-normal mt-0.5">Uncompressed Master</span>
+                  </button>
+                  <button onclick="selectAudioQuality('dolby', 'Dolby Digital 5.1 (AC3 / 640k)')" class="aq-pill py-3 px-3 rounded-xl text-xs font-semibold liquid-pill flex flex-col items-center text-slate-300">
+                    <span>🔊 Dolby Digital</span>
+                    <span class="text-[9px] text-slate-400 font-normal mt-0.5">5.1 Surround (AC3)</span>
+                  </button>
+                  <button onclick="selectAudioQuality('mp3', 'MP3 320 kbps High Quality')" class="aq-pill py-3 px-3 rounded-xl text-xs font-semibold liquid-pill flex flex-col items-center text-slate-300">
+                    <span>🎧 MP3 320k</span>
+                    <span class="text-[9px] text-slate-400 font-normal mt-0.5">Maximum Bitrate</span>
+                  </button>
+                  <button onclick="selectAudioQuality('aac', 'AAC / M4A (Apple Music Spec)')" class="aq-pill py-3 px-3 rounded-xl text-xs font-semibold liquid-pill flex flex-col items-center text-slate-300">
+                    <span>🍎 AAC / M4A</span>
+                    <span class="text-[9px] text-slate-400 font-normal mt-0.5">Apple & Windows Spec</span>
+                  </button>
+                  <button onclick="selectAudioQuality('opus', 'OPUS Next-Gen Hi-Fi')" class="aq-pill py-3 px-3 rounded-xl text-xs font-semibold liquid-pill flex flex-col items-center text-slate-300">
+                    <span>⚡ OPUS</span>
+                    <span class="text-[9px] text-slate-400 font-normal mt-0.5">Next-Gen Hi-Fi</span>
+                  </button>
+                </div>
+
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs text-slate-400 font-medium">Audio Container:</span>
+                    <span class="text-[10px] text-purple-400 font-mono" id="selectedAudioContainerLabel">FLAC</span>
+                  </div>
+                  <div class="flex gap-1.5 flex-wrap" id="audioContainerPills">
+                    <button onclick="selectAudioContainer('ac3', this)" class="ac-pill px-2.5 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white liquid-pill" id="acPill-ac3">AC3</button>
+                    <button onclick="selectAudioContainer('m4a', this)" class="ac-pill px-2.5 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white liquid-pill" id="acPill-m4a">M4A</button>
+                    <button onclick="selectAudioContainer('mp3', this)" class="ac-pill px-2.5 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white liquid-pill" id="acPill-mp3">MP3</button>
+                    <button onclick="selectAudioContainer('flac', this)" class="ac-pill active px-2.5 py-1 rounded-lg text-xs font-bold liquid-pill" id="acPill-flac">FLAC</button>
+                    <button onclick="selectAudioContainer('wav', this)" class="ac-pill px-2.5 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white liquid-pill" id="acPill-wav">WAV</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right 5 columns: Download Action Callout & Specs -->
+            <div class="lg:col-span-5 flex flex-col gap-4 self-stretch justify-between liquid-glass-subtle p-5 rounded-2xl border border-white/5">
+              <div class="flex flex-col gap-2.5">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Engine Processing Highlights</span>
+                <div class="text-xs text-slate-300 space-y-2">
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+                    <span>Multi-connection parallel stream extraction</span>
+                  </div>
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-2 h-2 rounded-full bg-cyan-400 shrink-0"></span>
+                    <span>Native FFmpeg 7.1 hardware encoding pipeline</span>
+                  </div>
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-2 h-2 rounded-full bg-purple-400 shrink-0"></span>
+                    <span>True Dolby Digital AC-3 5.1 & Studio FLAC 24-bit</span>
+                  </div>
+                  <div class="flex items-center gap-2.5">
+                    <span class="w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
+                    <span>Universal playback in Windows Media Player, VLC, Cars & Phones</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Primary Real Download Button -->
+              <button onclick="startRealDownload()" id="heroDownloadBtn" 
+                class="w-full py-4 px-5 rounded-2xl font-black text-sm text-black bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 shadow-xl shadow-emerald-500/20 active:scale-98 transition-all flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span id="heroDownloadBtnText">Download Video (4K)</span>
+              </button>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- 3. DASHBOARD STATISTICS BENTO GRID                       -->
+        <!-- ======================================================== -->
+        <section class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="liquid-glass-card rounded-2xl p-4">
+            <div class="text-slate-400 text-xs">Active Tasks</div>
+            <div class="text-3xl font-black text-white mt-1" id="bentoActiveCount">0</div>
+            <div class="text-[11px] text-emerald-400 mt-1">Multi-tasking ready</div>
+          </div>
+          <div class="liquid-glass-card rounded-2xl p-4">
+            <div class="text-slate-400 text-xs">Downloaded Library</div>
+            <div class="text-3xl font-black text-white mt-1" id="bentoCompletedCount">0</div>
+            <div class="text-[11px] text-blue-400 mt-1">Files on storage</div>
+          </div>
+          <div class="liquid-glass-card rounded-2xl p-4">
+            <div class="text-slate-400 text-xs">Network Speed</div>
+            <div class="text-3xl font-black text-cyan-300 mt-1" id="bentoSpeed">0.0 <span class="text-sm font-bold text-slate-400">MB/s</span></div>
+            <div class="text-[11px] text-cyan-400 mt-1">Live throughput</div>
+          </div>
+          <div class="liquid-glass-card rounded-2xl p-4">
+            <div class="text-slate-400 text-xs">Free Storage</div>
+            <div class="text-3xl font-black text-white mt-1" id="bentoFreeStorage">...</div>
+            <div class="text-[11px] text-amber-400 mt-1">Ready for 4K media</div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- 4. ACTIVE DOWNLOAD TASKS QUEUE                           -->
+        <!-- ======================================================== -->
+        <section id="activeTasksSection" class="flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+              <span>Active Downloads Queue</span>
+              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            </h3>
+            <button onclick="loadLibrary()" class="text-xs text-cyan-400 hover:underline">Refresh</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="downloadTasksContainer">
+            <div id="noTasksPlaceholder" class="col-span-full py-8 text-center text-slate-500 text-xs liquid-glass-subtle rounded-2xl">
+              No active downloads. Paste any link above to begin!
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- 5. DOWNLOADED MEDIA LIBRARY                              -->
+        <!-- ======================================================== -->
+        <section id="librarySection" class="liquid-glass rounded-3xl p-5 sm:p-6 border border-white/10 flex flex-col gap-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 class="text-base font-bold text-white tracking-tight">Downloaded Media Library</h3>
+              <p class="text-xs text-slate-400">Saved directly to your Windows Downloads folder</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="loadLibrary()" class="px-3 py-1.5 rounded-xl liquid-pill text-xs text-cyan-300 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Reload Library</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="divide-y divide-white/5" id="libraryTable">
+            <div class="py-6 text-center text-slate-500 text-xs">Loading library...</div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT: Full State, Events & API Wiring               -->
+  <!-- ======================================================== -->
+  <script>
+    const state = {
+      downloadMode: 'video', // 'video' or 'audio'
+      videoQuality: '4k',
+      videoContainer: 'mp4',
+      audioQuality: 'flac',
+      audioContainer: 'flac',
+      pollInterval: null,
+      activeTasks: {}
+    };
+
+    // Initialize System Info & Library on Load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchSystemInfo();
+      loadLibrary();
+      startPollingProgress();
+
+      const urlInput = document.getElementById('urlInput');
+      if (urlInput) {
+        urlInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            analyzeEnteredLink();
+          }
+        });
+      }
+    });
+
+
+    async function fetchSystemInfo() {
+      try {
+        const res = await fetch('/api/info');
+        const data = await res.json();
+        document.getElementById('sidebarFreeStorage').innerText = data.free_storage_gb + ' GB';
+        document.getElementById('bentoFreeStorage').innerText = data.free_storage_gb + ' GB';
+      } catch (e) {}
+    }
+
+    // Set sample URLs
+    function setSampleUrl(url, mode) {
+      document.getElementById('urlInput').value = url;
+      setDownloadMode(mode);
+      if (url.includes('youtube.com')) {
+        analyzeEnteredLink();
+      } else {
+        showToast(`Preset set for ${url}`, 'info');
+      }
+    }
+
+    // Switch between Video and Audio Mode
+    function setDownloadMode(mode) {
+      state.downloadMode = mode;
+      const vBtn = document.getElementById('modeBtnVideo');
+      const aBtn = document.getElementById('modeBtnAudio');
+      const vGroup = document.getElementById('videoOptionsGroup');
+      const aGroup = document.getElementById('audioOptionsGroup');
+      const heroBtnText = document.getElementById('heroDownloadBtnText');
+      const heroBtn = document.getElementById('heroDownloadBtn');
+
+      vBtn.className = "py-3 px-2 sm:px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition-all";
+      aBtn.className = "py-3 px-2 sm:px-3 rounded-xl text-xs font-semibold text-slate-400 hover:text-white flex items-center justify-center gap-1.5 transition-all";
+      vGroup.classList.add('hidden');
+      aGroup.classList.add('hidden');
+
+      if (mode === 'video') {
+        vBtn.className = "py-3 px-2 sm:px-3 rounded-xl text-xs font-bold text-cyan-300 bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center gap-1.5 transition-all";
+        vGroup.classList.remove('hidden');
+        heroBtnText.innerText = `Download Video (${state.videoQuality.toUpperCase()})`;
+        if (heroBtn) heroBtn.className = "w-full py-4 px-5 rounded-2xl font-black text-sm text-black bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 hover:from-emerald-300 hover:to-cyan-300 shadow-xl shadow-emerald-500/20 active:scale-98 transition-all flex items-center justify-center gap-2";
+      } else {
+        aBtn.className = "py-3 px-2 sm:px-3 rounded-xl text-xs font-bold text-purple-300 bg-purple-500/20 border border-purple-500/30 flex items-center justify-center gap-1.5 transition-all";
+        aGroup.classList.remove('hidden');
+        heroBtnText.innerText = `Download Audio (${state.audioQuality.toUpperCase()})`;
+        updateAudioContainerPills(state.audioContainer);
+        if (heroBtn) heroBtn.className = "w-full py-4 px-5 rounded-2xl font-black text-sm text-black bg-gradient-to-r from-purple-400 via-pink-300 to-indigo-400 hover:from-purple-300 hover:to-indigo-300 shadow-xl shadow-purple-500/20 active:scale-98 transition-all flex items-center justify-center gap-2";
+      }
+    }
+
+    // Video Quality Selection
+    function selectVideoQuality(q, label) {
+      state.videoQuality = q;
+      document.querySelectorAll('.vq-pill').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      document.getElementById('selectedVideoLabel').innerText = label;
+      document.getElementById('heroDownloadBtnText').innerText = `Download Video (${q.toUpperCase()})`;
+    }
+
+    // Audio Quality Selection
+    function selectAudioQuality(q, label) {
+      state.audioQuality = q;
+      state.audioContainer = q === 'dolby' ? 'ac3' : (q === 'aac' ? 'm4a' : (q === 'opus' ? 'opus' : q));
+      document.querySelectorAll('.aq-pill').forEach(el => el.classList.remove('active-audio'));
+      event.currentTarget.classList.add('active-audio');
+      document.getElementById('selectedAudioLabel').innerText = label;
+      document.getElementById('heroDownloadBtnText').innerText = `Download Audio (${q.toUpperCase()})`;
+      updateAudioContainerPills(state.audioContainer);
+    }
+
+    // Audio Container Selection
+    function selectAudioContainer(c, btn) {
+      state.audioContainer = c;
+      document.querySelectorAll('.ac-pill').forEach(el => {
+        el.className = "ac-pill px-2.5 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white liquid-pill";
+      });
+      if (btn) btn.className = "ac-pill active px-2.5 py-1 rounded-lg text-xs font-bold liquid-pill";
+      const lbl = document.getElementById('selectedAudioContainerLabel');
+      if (lbl) lbl.innerText = c.toUpperCase();
+      showToast(`Audio container set to .${c.toUpperCase()}`, 'info');
+    }
+
+    function updateAudioContainerPills(activeExt) {
+      document.querySelectorAll('.ac-pill').forEach(el => {
+        el.className = "ac-pill px-2.5 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white liquid-pill";
+      });
+      const activeBtn = document.getElementById(`acPill-${activeExt}`);
+      if (activeBtn) activeBtn.className = "ac-pill active px-2.5 py-1 rounded-lg text-xs font-bold liquid-pill";
+      const lbl = document.getElementById('selectedAudioContainerLabel');
+      if (lbl) lbl.innerText = activeExt.toUpperCase();
+    }
+
+    // Container Selection
+    function selectContainer(c, btn) {
+      state.videoContainer = c;
+      document.querySelectorAll('.c-pill').forEach(el => el.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    // 1. Real-Time Link Analysis
+    async function analyzeEnteredLink() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) {
+        showToast('Please paste a media link first.', 'error');
+        return;
+      }
+
+      const spinner = document.getElementById('analyzeSpinner');
+      const text = document.getElementById('analyzeText');
+      const beam = document.getElementById('analyzingBar');
+
+      spinner.classList.remove('hidden');
+      text.innerText = 'Extracting streams...';
+      beam.classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ url })
+        });
+        const data = await res.json();
+
+        spinner.classList.add('hidden');
+        text.innerText = 'Analyze Link';
+        beam.classList.add('hidden');
+
+        if (data.success) {
+          document.getElementById('mediaTitle').innerText = data.title;
+          document.getElementById('mediaUploader').innerText = data.uploader;
+          document.getElementById('mediaDurationBadge').innerText = data.duration;
+          
+          if (data.thumbnail_url) {
+            document.getElementById('mediaThumb').src = data.thumbnail_url;
+          }
+
+          // Update capabilities
+          const resText = data.has_4k ? '4K Ultra HD' : (data.has_1080p ? '1080p Full HD' : (data.has_720p ? '720p HD' : 'Best Available'));
+          document.getElementById('capMaxRes').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>${resText}`;
+          document.getElementById('capAudioTrack').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>${data.max_audio_channels >= 6 ? 'Dolby 5.1 Surround' : 'Studio Stereo'}`;
+
+          showToast(`✓ Analyzed: ${data.title.substring(0, 32)}...`, 'success');
+          scrollToSection('mediaConfigureSection');
+        } else {
+          showToast(`Error: ${data.error}`, 'error');
+        }
+      } catch (err) {
+        spinner.classList.add('hidden');
+        text.innerText = 'Analyze Link';
+        beam.classList.add('hidden');
+        showToast('Failed to contact download server.', 'error');
+      }
+    }
+
+    async function pasteAndAnalyze() {
+      try {
+        const clip = await navigator.clipboard.readText();
+        if (clip) {
+          document.getElementById('urlInput').value = clip.trim();
+        }
+      } catch (e) {}
+      analyzeEnteredLink();
+    }
+
+    function clearUrlInput() {
+      document.getElementById('urlInput').value = '';
+      document.getElementById('urlInput').focus();
+    }
+
+    // 2. Real Download Execution
+    async function startRealDownload() {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) {
+        showToast('Please enter a link first.', 'error');
+        return;
+      }
+
+      let quality, format, mediaType;
+      if (state.downloadMode === 'audio') {
+        mediaType = 'audio';
+        quality = state.audioQuality;
+        format = state.audioContainer;
+      } else {
+        mediaType = 'video';
+        quality = state.videoQuality;
+        format = state.videoContainer;
+      }
+
+      showToast(`Starting ${mediaType.toUpperCase()} download (${quality.toUpperCase()})...`, 'info');
+
+      try {
+        const res = await fetch('/api/download', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            url,
+            quality,
+            format,
+            type: mediaType
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✓ Task queued! Downloading at maximum speed...', 'success');
+          startPollingProgress();
+          scrollToSection('activeTasksSection');
+        } else {
+          showToast(`Download failed: ${data.error}`, 'error');
+        }
+      } catch (err) {
+        showToast('Could not contact server to initiate download.', 'error');
+      }
+    }
+
+    // 3. Live Progress Polling
+    function startPollingProgress() {
+      if (state.pollInterval) clearInterval(state.pollInterval);
+
+      state.pollInterval = setInterval(async () => {
+        try {
+          const res = await fetch('/api/progress');
+          const data = await res.json();
+
+          document.getElementById('topSpeedMeter').innerText = data.total_speed;
+          document.getElementById('bentoSpeed').innerHTML = `${data.total_speed.replace('MB/s', '')} <span class="text-sm font-bold text-slate-400">MB/s</span>`;
+          document.getElementById('bentoActiveCount').innerText = data.active_count;
+          document.getElementById('activeCountBadge').innerText = data.active_count;
+
+          renderDownloadTasks(data.tasks);
+
+          // If a download completed, reload library
+          if (data.completed_count > 0) {
+            document.getElementById('bentoCompletedCount').innerText = data.completed_count;
+          }
+        } catch (e) {}
+      }, 700);
+    }
+
+    function renderDownloadTasks(tasks) {
+      const container = document.getElementById('downloadTasksContainer');
+      const taskList = Object.values(tasks || {}).filter(t => t.status === 'downloading');
+
+      if (taskList.length === 0) {
+        container.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500 text-xs liquid-glass-subtle rounded-2xl">No active downloads. Paste a link above to begin!</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      taskList.forEach(t => {
+        const isAud = t.type === 'audio';
+        const badgeColor = isAud ? 'bg-purple-500/20 text-purple-300' : 'bg-cyan-500/20 text-cyan-300';
+        const progressGrad = isAud ? 'from-purple-500 via-pink-400 to-indigo-400' : 'from-cyan-500 via-teal-400 to-emerald-400';
+
+        const div = document.createElement('div');
+        div.className = 'liquid-glass-card rounded-2xl p-5 flex flex-col justify-between border border-white/10';
+        div.innerHTML = `
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="min-w-0">
+              <h4 class="text-sm font-bold text-white truncate">${t.name}</h4>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="px-2 py-0.5 rounded-md ${badgeColor} text-[10px] font-bold">${t.format.toUpperCase()} • ${t.quality}</span>
+                <span class="text-slate-400 text-xs font-mono">${t.speed}</span>
+              </div>
+            </div>
+            <button onclick="cancelTask('${t.id}')" class="p-2 rounded-xl liquid-pill text-slate-400 hover:text-rose-400 transition-colors" title="Cancel">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+          <div class="flex flex-col gap-1.5 mt-2">
+            <div class="flex justify-between text-xs font-mono">
+              <span class="text-white font-bold">${t.percent}%</span>
+              <span class="text-slate-400">${t.size} • <span class="text-cyan-400">ETA: ${t.eta}</span></span>
+            </div>
+            <div class="w-full h-2.5 bg-slate-800/80 rounded-full overflow-hidden p-0.5">
+              <div class="h-full bg-gradient-to-r ${progressGrad} rounded-full transition-all duration-300" style="width: ${t.percent}%"></div>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    async function cancelTask(id) {
+      try {
+        await fetch('/api/cancel', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ task_id: id })
+        });
+        showToast('Download cancelled', 'info');
+      } catch (e) {}
+    }
+
+    // 4. Real Media Library & Player Loading
+    async function loadLibrary() {
+      try {
+        const res = await fetch('/api/library');
+        const data = await res.json();
+        const container = document.getElementById('libraryTable');
+        container.innerHTML = '';
+
+        document.getElementById('libraryCountBadge').innerText = data.files.length;
+        document.getElementById('bentoCompletedCount').innerText = data.files.length;
+
+        if (!data.files || data.files.length === 0) {
+          container.innerHTML = '<div class="py-6 text-center text-slate-500 text-xs">No media files downloaded yet.</div>';
+          return;
+        }
+
+        data.files.forEach(f => {
+          const div = document.createElement('div');
+          div.className = 'py-3.5 flex items-center justify-between gap-3 sm:gap-4 group hover:bg-white/[0.03] px-2.5 rounded-2xl transition-all';
+          const isAudio = f.type === 'audio';
+          const tagClass = isAudio ? 'text-purple-400 bg-purple-500/15 border-purple-500/25' : 'text-cyan-400 bg-cyan-500/15 border-cyan-500/25';
+          const thumbUrl = f.thumbnail_url || `/thumbnail/${encodeURIComponent(f.name)}`;
+          const typeLabel = isAudio ? '🎵 Lossless / Audio' : '🎬 HD/4K Video';
+          const badgeBg = isAudio ? 'bg-purple-900/90 text-purple-200' : 'bg-cyan-900/90 text-cyan-200';
+
+          div.innerHTML = `
+            <div class="flex items-center gap-3 min-w-0">
+              <!-- Media Thumbnail -->
+              <div class="relative w-14 h-11 sm:w-16 sm:h-12 rounded-xl overflow-hidden border border-white/10 shrink-0 bg-slate-900 shadow-md">
+                <img src="${thumbUrl}" alt="thumb" class="w-full h-full object-cover" 
+                  onerror="this.src='https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=120&auto=format&fit=crop&q=80'">
+                <div class="absolute bottom-0.5 right-0.5 px-1 rounded text-[8px] font-bold font-mono ${badgeBg}">
+                  ${f.ext}
+                </div>
+              </div>
+
+              <!-- Media Info -->
+              <div class="min-w-0">
+                <div class="text-xs sm:text-sm font-bold text-white truncate group-hover:text-cyan-300 transition-colors">${f.name}</div>
+                <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${tagClass}">${f.ext}</span>
+                  <span>•</span>
+                  <span>${f.size}</span>
+                  <span>•</span>
+                  <span class="${isAudio ? 'text-purple-300' : 'text-cyan-300'}">${typeLabel}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Controls: Save, Delete -->
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <a href="${f.download_url}" download 
+                class="px-2.5 sm:px-3 py-1.5 rounded-xl liquid-pill text-xs font-semibold text-slate-200 hover:text-white flex items-center gap-1 active:scale-95 transition-all" title="Save to device">
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <span class="hidden sm:inline">Save</span>
+              </a>
+              <button onclick="deleteMediaFile('${f.name.replace(/'/g, "\\'")}')" 
+                class="px-2.5 sm:px-3 py-1.5 rounded-xl liquid-pill text-xs font-bold text-rose-400 hover:text-rose-200 hover:bg-rose-500/20 border border-rose-500/20 flex items-center gap-1 active:scale-95 transition-all" title="Delete from disk">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                <span class="hidden sm:inline">Delete</span>
+              </button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      } catch (err) {}
+    }
+
+    // Delete Media File from Disk
+    async function deleteMediaFile(filename) {
+      if (!confirm(`Are you sure you want to delete "${filename}" from disk?`)) {
+        return;
+      }
+      try {
+        const res = await fetch('/api/delete', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ filename })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`✓ Deleted "${filename}"`, 'info');
+          loadLibrary();
+          fetchSystemInfo(); // Refresh available disk space
+        } else {
+          showToast(`Delete failed: ${data.error}`, 'error');
+        }
+      } catch (err) {
+        showToast('Could not contact server to delete file.', 'error');
+      }
+    }
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // Theme Controls
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      const border = type === 'success' ? 'border-emerald-500/40' : (type === 'error' ? 'border-rose-500/40' : 'border-cyan-500/40');
+      t.className = `liquid-glass ${border} p-3.5 rounded-2xl shadow-2xl text-xs font-semibold text-white pointer-events-auto flex items-center justify-between gap-3`;
+      t.innerHTML = `<span>${msg}</span><button onclick="this.parentElement.remove()" class="text-slate-400">&times;</button>`;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 3500);
+    }
+
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      sb.classList.toggle('hidden');
+    }
+  </script>
+</body>
+</html>
